@@ -6,8 +6,8 @@ public class App {
     public static void main(String[] args){
         //程序的主入口
         //创建游戏的登录界面
-        new LoginJFrame();
-        new RegisterJFrame();
+//        new LoginJFrame();
+//        new RegisterJFrame();
         new GameJFrame();
     }
 }

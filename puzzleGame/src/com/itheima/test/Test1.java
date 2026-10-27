@@ -1,9 +1,9 @@
-package com.itheima.ui;
+package com.itheima.test;
 
 import java.util.Random;
 
 public class Test1 {
-    static void main() {
+    public static void main(String[] args) {
         //数组的打乱
         int[] tempArr = new int[]{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
         Random r = new Random();
@@ -17,7 +17,7 @@ public class Test1 {
         //代码利于理解
 //        int k = 0;
 //        for (int i = 0; i < 4; i++) {
-//            for (int j = 0; j < 4; j++) {
+//            for (int j = 0           ; j < 4; j++) {
 //                Arr[i][j] = tempArr[k++];
 //            }
 //        }
@@ -36,5 +36,9 @@ public class Test1 {
             System.out.println();
         }
         System.out.println();
+
+//        new MyJFrame();
+//        new MyJFrame2();
+        new MyJFrame3();
     }
 }

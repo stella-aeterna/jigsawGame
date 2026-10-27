@@ -1,4 +1,4 @@
-package com.itheima.ui;
+package com.itheima.test;
 
 import javax.swing.*;
 

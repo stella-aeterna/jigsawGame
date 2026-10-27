@@ -1,14 +1,22 @@
 package com.itheima.ui;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Random;
 
-public class GameJFrame extends JFrame {
+public class GameJFrame extends JFrame implements KeyListener , MouseListener {
     //JFrame 界面 ，窗体
     //规定：GameJFrame这个界面表示游戏的主界面
     //界面的宽高
-    private static final int  width = 495;
-    private static final int  height = 540;
+    private static final int  width = 590;
+    private static final int  height = 703;
+    //空白块的位置
+    int x;
+    int y;
     //数组，管理数据
     int[][] Arr = new int[4][4];
     public GameJFrame(){
@@ -23,7 +31,7 @@ public class GameJFrame extends JFrame {
 
         //初始化图片
         initImage();
-
+        this.addKeyListener(this);
 
         //显示界面，让其他的加载出来，在显示
         this.setVisible(true);
@@ -51,36 +59,50 @@ public class GameJFrame extends JFrame {
 //        }
         for (int i = 0; i < tempArr.length; i++) {
             //代码简洁
+            if(tempArr[i] == 0){
+                x = i / 4;
+                y = i % 4;
+            }
             Arr[i / 4][i % 4] = tempArr[i];
         }
     }
-
+    //初始化图片
     private void initImage() {
-//        //初始化图片
-//        //创建ImageIcon图片对象
-//        ImageIcon icon = new ImageIcon("puzzleGame\\image\\animal\\animal1\\animal1_01.png");
-//        //创建JLabel的对象（管理容器）
-//        JLabel jLabel1 = new JLabel(icon);
-//        //设置图像位置
-//        jLabel1.setBounds(0,0,120,120);
-//        //把管理容器添加到界面
-//        //this.add(jLabel);
-//        //先获取JFrame中的隐藏容器,再添加
-//        this.getContentPane().add(jLabel1);
+        //先清空已经出现的图片
+        this.getContentPane().removeAll();
+
         //用循环操作
-        int n = 4;
-        int numberInt = 1;
+        int n = Arr[0].length;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                String numberString = String.format("%02d",numberInt);
-                String imagePath = "puzzleGame\\image\\animal\\animal1\\animal1_" + numberString +".png";
+                int number = Arr[i][j];
+                String numberString = String.format("%02d",number);
+                //创建ImageIcon图片对象
+                String imagePath = "puzzleGame\\image\\number\\number1\\number1_"+ numberString +".png";
+                //String imagePath = "puzzleGame\\image\\animal\\animal1\\animal1_" + numberString +".png";
                 ImageIcon icon = new ImageIcon(imagePath);
+                //创建JLabel的对象（管理容器）
                 JLabel jLabel  = new JLabel(icon);
-                jLabel.setBounds(120*j,120*i,120,120);
+                //设置图像位置
+
+                jLabel.setBounds(120*j + 47,120*i + 110,120,120);
+                //给图片加边框
+                //0:表示让图片凸起   可以用BevelBorder.RAISED
+                //1:表示让图片凹下去 可以用BevelBorder.LOWERED
+                jLabel.setBorder(new BevelBorder(BevelBorder.LOWERED));
+                //先获取JFrame中的隐藏容器,再添加
                 this.getContentPane().add(jLabel);
-                numberInt++;
             }
         }
+
+        //先添加的会覆盖后添加的
+        ImageIcon BackgroundImageIcon = new ImageIcon("puzzleGame\\image\\Background\\BackgroundImage.jpg");
+        JLabel jLabel = new JLabel(BackgroundImageIcon);
+        jLabel.setBounds(0,0,578,644);
+        this.getContentPane().add(jLabel);
+
+        //刷新界面
+        this.getContentPane().repaint();
     }
 
     private void initJMenuBar() {
@@ -125,5 +147,77 @@ public class GameJFrame extends JFrame {
         this.setLocationRelativeTo(null);
         //取消默认放置，才能按照XY轴的形式添加组件
         this.setLayout(null);
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        int keyCode = e.getKeyCode();
+        System.out.println(keyCode);
+        //38是上键，87是w
+        if((keyCode == 38 || keyCode == 87) && x != 3){//上
+            System.out.println("上");
+            Arr[x][y] = Arr[x + 1][y];
+            Arr[x + 1][y] = 0;
+            x = x + 1;
+            initImage();
+        }
+        //40是下键，83是s
+        else if((keyCode == 40 || keyCode == 83) && x != 0){//下
+            System.out.println("下");
+            Arr[x][y] = Arr[x - 1][y];
+            Arr[x - 1][y] = 0;
+            x = x - 1;
+            initImage();
+        }
+        //37是左键，65是a
+        else if((keyCode == 37 || keyCode == 65) && y != 3){//左
+            System.out.println("左");
+            Arr[x][y] = Arr[x][y + 1];
+            Arr[x][y + 1] = 0;
+            y = y + 1;
+            initImage();
+        }
+        //39是右键，68是d
+        else if((keyCode == 39 || keyCode == 68) && y != 0){//右
+            System.out.println("右");
+            Arr[x][y] = Arr[x][y - 1];
+            Arr[x][y - 1] = 0;
+            y = y - 1;
+            initImage();
+        }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
     }
 }

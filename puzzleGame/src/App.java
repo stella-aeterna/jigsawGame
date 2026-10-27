@@ -8,6 +8,6 @@ public class App {
         //创建游戏的登录界面
 //        new LoginJFrame();
 //        new RegisterJFrame();
-        new GameJFrame();
+        GameJFrame g = new GameJFrame();
     }
 }

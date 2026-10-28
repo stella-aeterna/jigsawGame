@@ -17,8 +17,29 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
     //空白块的位置
     int x;
     int y;
+    //步数
+    int step = 0;
+    //创建选项下的条目对象
+    JMenuItem replayItem = new JMenuItem("重新游戏");
+    JMenuItem reLoginItem = new JMenuItem("重新登录");
+    JMenuItem closeItem = new JMenuItem("关闭游戏");
+
+    JMenuItem accountItem = new JMenuItem("公众号");
+    //图片路径
+    String BackgroundPath = "puzzleGame\\image\\Background\\";
+    String Path = "puzzleGame\\image\\number\\number1\\number1";
+    //String Path = "puzzleGame\\image\\emoji\\emoji7\\emoji7";
+    //String Path = "puzzleGame\\image\\animal\\animal1\\animal1";
     //数组，管理数据
-    int[][] Arr = new int[4][4];
+    int[][] data = new int[4][4];
+    //存储正确的数据
+    int[][] win = new int[][]{
+            {1,2,3,4},
+            {5,6,7,8},
+            {9,10,11,12},
+            {13,14,15,0}
+    };
+
     public GameJFrame(){
         //界面初始化
         initJFrame();
@@ -29,8 +50,10 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
         //初始化数据（打乱）
         initData();
 
-        //初始化图片
+        //加载图片
         initImage();
+
+        //绑定键盘
         this.addKeyListener(this);
 
         //显示界面，让其他的加载出来，在显示
@@ -39,9 +62,9 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     }
-
+    //数组的打乱
     private void initData() {
-        //数组的打乱
+
         int[] tempArr = new int[]{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
         Random r = new Random();
         for (int i = 0; i < tempArr.length; i++) {
@@ -63,7 +86,7 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
                 x = i / 4;
                 y = i % 4;
             }
-            Arr[i / 4][i % 4] = tempArr[i];
+            data[i / 4][i % 4] = tempArr[i];
         }
     }
     //初始化图片
@@ -71,14 +94,33 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
         //先清空已经出现的图片
         this.getContentPane().removeAll();
 
+        //判断是否胜利
+        if (victory()) {
+            JLabel jLabelVictory = new JLabel(new ImageIcon("puzzleGame\\image\\win.png")) ;
+
+            jLabelVictory.setBounds(200,300,197,73);
+            this.getContentPane().add(jLabelVictory);
+            this.getContentPane().repaint();
+
+            //加载完整图片(加载最后一张图片)
+            String fullImage =  Path + "All.jpg";
+            JLabel jLabelAll = new JLabel(new ImageIcon(fullImage));
+            jLabelAll.setBounds(47,110,480,480);
+            this.getContentPane().add(jLabelAll);
+        }
+
+        JLabel stepCount = new JLabel("步数：" + step);
+        stepCount.setBounds(70,68,100,27);
+        stepCount.setFont(new java.awt.Font("微软雅黑", java.awt.Font.PLAIN, 20));
+        this.getContentPane().add(stepCount);
         //用循环操作
-        int n = Arr[0].length;
+        int n = data[0].length;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                int number = Arr[i][j];
+                int number = data[i][j];
                 String numberString = String.format("%02d",number);
                 //创建ImageIcon图片对象
-                String imagePath = "puzzleGame\\image\\number\\number1\\number1_"+ numberString +".png";
+                String imagePath = Path + "_" + numberString +".png";
                 //String imagePath = "puzzleGame\\image\\animal\\animal1\\animal1_" + numberString +".png";
                 ImageIcon icon = new ImageIcon(imagePath);
                 //创建JLabel的对象（管理容器）
@@ -96,7 +138,8 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
         }
 
         //先添加的会覆盖后添加的
-        ImageIcon BackgroundImageIcon = new ImageIcon("puzzleGame\\image\\Background\\BackgroundImage.jpg");
+        //添加背景图片
+        ImageIcon BackgroundImageIcon = new ImageIcon(BackgroundPath + "BackgroundImage.jpg");
         JLabel jLabel = new JLabel(BackgroundImageIcon);
         jLabel.setBounds(0,0,578,644);
         this.getContentPane().add(jLabel);
@@ -104,9 +147,9 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
         //刷新界面
         this.getContentPane().repaint();
     }
-
+    //菜单初始化
     private void initJMenuBar() {
-        //菜单初始化
+
         //创建整个菜单对象
         JMenuBar jMenuBar = new JMenuBar();
 
@@ -114,12 +157,7 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
         JMenu functionJMenu = new JMenu("功能");
         JMenu aboutJMenu = new JMenu("关于我们");
 
-        //创建选项下的条目对象
-        JMenuItem replayItem = new JMenuItem("重新游戏");
-        JMenuItem reLoginItem = new JMenuItem("重新登录");
-        JMenuItem closeItem = new JMenuItem("关闭游戏");
 
-        JMenuItem accountItem = new JMenuItem("公众号");
 
         //把菜单栏，选项，条目组合起来
         functionJMenu.add(replayItem);
@@ -131,12 +169,18 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
         jMenuBar.add(functionJMenu);
         jMenuBar.add(aboutJMenu);
 
+        //给每个都绑定事件
+        replayItem.addMouseListener(this);
+        reLoginItem.addMouseListener(this);
+        closeItem.addMouseListener(this);
+        accountItem.addMouseListener(this);
+
         //给界面设置菜单
         this.setJMenuBar(jMenuBar);
     }
-
+    //设置界面
     private void initJFrame() {
-        //设置界面
+
         //设置宽高
         this.setSize(width,height);
         //设置标题
@@ -155,69 +199,184 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        if (victory()) {
+            //如果胜利了，就不再可查看
+            return;
+        }
 
+        int keyCode = e.getKeyCode();
+        //90是z
+        if(keyCode == 90){
+
+            //清空图片
+            this.getContentPane().removeAll();
+
+            //加载边框线
+            int n = win[0].length;
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    int number = win[i][j];
+                    String numberString = String.format("%02d",number);
+                    String imagePath = Path + "_" + numberString +".png";
+                    JLabel jLabel  = new JLabel(new ImageIcon(imagePath));
+                    jLabel.setBounds(120*j + 47,120*i + 110,120,120);
+                    jLabel.setBorder(new BevelBorder(BevelBorder.LOWERED));
+                    this.getContentPane().add(jLabel);
+                }
+            }
+
+            //加载完整图片(加载最后一张图片)
+            String fullImage =  Path + "All.jpg";
+            JLabel jLabelAll = new JLabel(new ImageIcon(fullImage));
+            jLabelAll.setBounds(47,110,480,480);
+            this.getContentPane().add(jLabelAll);
+            //加载背景图片
+            ImageIcon BackgroundImageIcon = new ImageIcon(BackgroundPath + "BackgroundImage.jpg");
+            JLabel jLabel = new JLabel(BackgroundImageIcon);
+            jLabel.setBounds(0,0,578,644);
+            this.getContentPane().add(jLabel);
+            //刷新界面
+            this.getContentPane().repaint();
+        }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
         int keyCode = e.getKeyCode();
+        //如果按下松开r，重新游戏,r是
+        if(keyCode == 82){
+            step = 0;
+            initData();
+            initImage();
+        }
+
+        if (victory()) {
+            //如果胜利了，就不再可移动
+            return;
+        }
+
         System.out.println(keyCode);
         //38是上键，87是w
         if((keyCode == 38 || keyCode == 87) && x != 3){//上
             System.out.println("上");
-            Arr[x][y] = Arr[x + 1][y];
-            Arr[x + 1][y] = 0;
+            data[x][y] = data[x + 1][y];
+            data[x + 1][y] = 0;
             x = x + 1;
+            step++;
             initImage();
         }
         //40是下键，83是s
         else if((keyCode == 40 || keyCode == 83) && x != 0){//下
             System.out.println("下");
-            Arr[x][y] = Arr[x - 1][y];
-            Arr[x - 1][y] = 0;
+            data[x][y] = data[x - 1][y];
+            data[x - 1][y] = 0;
             x = x - 1;
+            step++;
             initImage();
         }
         //37是左键，65是a
         else if((keyCode == 37 || keyCode == 65) && y != 3){//左
             System.out.println("左");
-            Arr[x][y] = Arr[x][y + 1];
-            Arr[x][y + 1] = 0;
+            data[x][y] = data[x][y + 1];
+            data[x][y + 1] = 0;
             y = y + 1;
+            step++;
             initImage();
         }
         //39是右键，68是d
         else if((keyCode == 39 || keyCode == 68) && y != 0){//右
             System.out.println("右");
-            Arr[x][y] = Arr[x][y - 1];
-            Arr[x][y - 1] = 0;
+            data[x][y] = data[x][y - 1];
+            data[x][y - 1] = 0;
             y = y - 1;
+            step++;
+            initImage();
+        }
+        //90是z
+        else if(keyCode == 90){
+            initImage();
+        }
+        //88是x
+        else if(keyCode == 88){
+            //一键还原
+            data = new int[][]{
+                    {1,2,3,4},
+                    {5,6,7,8},
+                    {9,10,11,12},
+                    {13,14,15,0}
+            };
+            //让x,y重新标记空白块
+            x = 3;y = 3;
             initImage();
         }
     }
 
+    public boolean victory(){
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data[i].length; j++) {
+                //有一个不同返回false
+                if(data[i][j] != win[i][j])
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    //单击
     @Override
     public void mouseClicked(MouseEvent e) {
-
+        System.out.println("单击");
     }
-
+    //按下
     @Override
     public void mousePressed(MouseEvent e) {
-
+        System.out.println("按下");
     }
-
+    //松开
     @Override
     public void mouseReleased(MouseEvent e) {
-
+        System.out.println("松开");
+        Object source = e.getSource();
+        //重新游戏
+        if(source == replayItem){
+            step = 0;
+            initData();
+            initImage();
+        }
+        //重新登录
+        else if(source == reLoginItem){
+            this.setVisible(false);
+            new LoginJFrame();
+        }
+        //关闭游戏
+        else if(source == closeItem){
+            //直接关闭虚拟机
+            System.exit(0);
+        }
+        //公众号
+        else if(source == accountItem){
+            JDialog jDialog = new JDialog();
+            //创建按背景图片
+            JLabel DialogBackgroundImage = new JLabel(new ImageIcon( BackgroundPath + "DialogBackgroundImage.jpg"));
+            DialogBackgroundImage.setBounds(0,0,258,258);
+            jDialog.getContentPane().add(DialogBackgroundImage);
+            //设置弹窗的大小
+            jDialog.setSize(300,300);
+            jDialog.setAlwaysOnTop(true);
+            jDialog.setLocationRelativeTo(null);
+            //不关闭该弹窗，无法操作下方界面
+            jDialog.setModal(true);
+            jDialog.setVisible(true);
+        }
     }
-
+    //划入
     @Override
     public void mouseEntered(MouseEvent e) {
-
+        System.out.println("划入");
     }
-
+    //划出
     @Override
     public void mouseExited(MouseEvent e) {
-
+        System.out.println("划出");
     }
 }

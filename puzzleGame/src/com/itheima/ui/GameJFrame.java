@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.nio.file.Paths;
 import java.util.Random;
 
 public class GameJFrame extends JFrame implements KeyListener , MouseListener {
@@ -23,13 +24,25 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
     JMenuItem replayItem = new JMenuItem("重新游戏");
     JMenuItem reLoginItem = new JMenuItem("重新登录");
     JMenuItem closeItem = new JMenuItem("关闭游戏");
+    //更换图片
+    JMenuItem changeNumberItem = new JMenuItem("数字");
+    JMenuItem changeAnimalItem = new JMenuItem("动物");
+    JMenuItem changeEmojiItem = new JMenuItem("表情");
 
     JMenuItem accountItem = new JMenuItem("公众号");
     //图片路径
-    String BackgroundPath = "puzzleGame\\image\\Background\\";
-    String Path = "puzzleGame\\image\\number\\number1\\number1";
-    //String Path = "puzzleGame\\image\\emoji\\emoji7\\emoji7";
-    //String Path = "puzzleGame\\image\\animal\\animal1\\animal1";
+
+
+    String firstPath = "puzzleGame\\image";
+    String BackgroundPath = firstPath + "\\Background\\";
+    String[][] PathStr = new String[][]{
+            {"\\number", firstPath + "\\number"},//\number1\number1
+            {"\\emoji",firstPath+"\\emoji"},
+            {"\\animal",firstPath+ "\\animal"}
+    };
+    //初始化为数字图片
+    //默认为数字第2张
+    String Path = PathStr[0][1] + PathStr[0][0] + 2 + PathStr[0][0] + 2;
     //数组，管理数据
     int[][] data = new int[4][4];
     //存储正确的数据
@@ -62,6 +75,60 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     }
+
+    private void change(Object source) {
+        Random r = new Random();
+
+        //  {"\\number","puzzleGame\\image\\number"},
+        //  {"\\emoji","puzzleGame\\image\\emoji"},
+        //  {"\\animal","puzzleGame\\image\\animal"}
+
+        //截取当前图片的标号
+        int lastIndex = Path.lastIndexOf("\\");
+        String lastString = Path.substring(lastIndex);
+        //更换图片(数字)
+        if(source == changeNumberItem){
+            int index = r.nextInt(2) + 1;
+            System.out.println(lastString);
+            //记录随机的标号
+            String Tem = PathStr[0][0] + index;
+            //判断当前的编号是否与随机编号重复，如果重复就重新随机
+            while(lastString.equals(Tem)){
+                index = r.nextInt(2) + 1;
+                System.out.println("重新随机");
+                Tem = PathStr[0][0] + index;
+            }
+            Path = PathStr[0][1] + Tem + Tem;
+        }
+        //更换图片(表情)
+        else if (source == changeEmojiItem){
+            int index = r.nextInt(7) + 1;
+            System.out.println(lastString);
+            String Tem = PathStr[1][0] + index;
+            while(lastString.equals(Tem)){
+                index = r.nextInt(7) + 1;
+                System.out.println("重新随机");
+                Tem = PathStr[1][0] + index;
+            }
+            Path = PathStr[1][1] + Tem + Tem;
+        }
+        //更换图片(动物)
+        else if(source == changeAnimalItem){
+            int index = r.nextInt(2) + 1;
+            String Tem = PathStr[2][0] + index;
+            System.out.println(lastString);
+            while(Tem.equals(lastString)){
+                index = r.nextInt(2) + 1;
+                System.out.println("重新随机");
+                Tem = PathStr[2][0] + index;
+            }
+            Path = PathStr[2][1] + Tem + Tem;
+            initImage();
+        }
+        //刷新图片
+        initImage();
+    }
+
     //数组的打乱
     private void initData() {
 
@@ -80,13 +147,33 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
 //                Arr[i][j] = tempArr[k++];
 //            }
 //        }
+        int inv = 0;
+        //除去0求逆序数
+        for (int i = 0; i < tempArr.length; i++) {
+            if(tempArr[i] == 0){
+                continue;
+            }
+            for (int j = i + 1; j < tempArr.length; j++) {
+                if(tempArr[j] == 0){
+                    continue;
+                }
+                if(tempArr[i] > tempArr[j])
+                    inv++;
+            }
+        }
         for (int i = 0; i < tempArr.length; i++) {
             //代码简洁
             if(tempArr[i] == 0){
                 x = i / 4;
                 y = i % 4;
             }
-            data[i / 4][i % 4] = tempArr[i];
+                data[i / 4][i % 4] = tempArr[i];
+        }
+        //逆序数 + 空格行号(重0向下) 为奇数才有解，使用为偶数调整
+        if((inv + x) % 2 == 0){
+            int tem = data[x][(y + 1) % 4];
+            data[x][(y + 1) % 4] = data[x][(y + 2) % 4];
+            data[x][(y + 2) % 4] = tem;
         }
     }
     //初始化图片
@@ -157,12 +244,17 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
         JMenu functionJMenu = new JMenu("功能");
         JMenu aboutJMenu = new JMenu("关于我们");
 
-
+        JMenu changeJMenu = new JMenu("更换图片");
 
         //把菜单栏，选项，条目组合起来
+        functionJMenu.add(changeJMenu);
         functionJMenu.add(replayItem);
         functionJMenu.add(reLoginItem);
         functionJMenu.add(closeItem);
+
+        changeJMenu.add(changeAnimalItem);
+        changeJMenu.add(changeEmojiItem);
+        changeJMenu.add(changeNumberItem);
 
         aboutJMenu.add(accountItem);
 
@@ -173,6 +265,11 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
         replayItem.addMouseListener(this);
         reLoginItem.addMouseListener(this);
         closeItem.addMouseListener(this);
+
+        changeNumberItem.addMouseListener(this);
+        changeAnimalItem.addMouseListener(this);
+        changeEmojiItem.addMouseListener(this);
+
         accountItem.addMouseListener(this);
 
         //给界面设置菜单
@@ -309,6 +406,43 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
             x = 3;y = 3;
             initImage();
         }
+        //70是f
+        else if(keyCode == 70){
+            //在全部图片随机
+            Random r = new Random();
+            //  {"\\number","puzzleGame\\image\\number"},
+            //  {"\\emoji","puzzleGame\\image\\emoji"},
+            //  {"\\animal","puzzleGame\\image\\animal"}
+            int i = r.nextInt(3);
+            //截取当前图片的标号
+            int lastIndex = Path.lastIndexOf("\\");
+            String lastString = Path.substring(lastIndex);
+            int index = 0;
+            if(i == 0)
+                index = r.nextInt(2) + 1;
+            else if(i == 1)
+                index = r.nextInt(7) + 1;
+            else if(i == 2)
+                index = r.nextInt(2) + 1;
+            //记录随机的标号
+            String Tem = PathStr[i][0] + index;
+            System.out.println(lastString);
+            System.out.println(Tem);
+            //判断当前的编号是否与随机编号重复，如果重复就重新随机
+            while(lastString.equals(Tem)){
+                i = r.nextInt(3);
+                if(i == 0)
+                    index = r.nextInt(2) + 1;
+                else if(i == 1)
+                    index = r.nextInt(7) + 1;
+                else if(i == 2)
+                    index = r.nextInt(2) + 1;
+                System.out.println("重新随机");
+                Tem = PathStr[i][0] + index;
+            }
+            Path = PathStr[i][1] + Tem + Tem;
+            initImage();
+        }
     }
 
     public boolean victory(){
@@ -337,8 +471,13 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
     public void mouseReleased(MouseEvent e) {
         System.out.println("松开");
         Object source = e.getSource();
+        //更换图片
+        //动物,表情,数字
+        if(source == changeAnimalItem || source == changeEmojiItem || source == changeNumberItem){
+            change(source);
+        }
         //重新游戏
-        if(source == replayItem){
+        else if(source == replayItem){
             step = 0;
             initData();
             initImage();
@@ -372,11 +511,9 @@ public class GameJFrame extends JFrame implements KeyListener , MouseListener {
     //划入
     @Override
     public void mouseEntered(MouseEvent e) {
-        System.out.println("划入");
     }
     //划出
     @Override
     public void mouseExited(MouseEvent e) {
-        System.out.println("划出");
     }
 }
